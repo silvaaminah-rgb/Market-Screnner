@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d10">
+  <title>Bandarmologi Crypto Screener</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="websocket-manager.js"></script>
+  <script defer src="smc-detector.js"></script>
+  <script defer src="bandarmologi.js"></script>
+  <script defer src="chart.js"></script>
+  <script defer src="screener.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Bandarmologi Crypto Screener">
+      <span class="brand-mark">B</span>
+      <span><strong>BANDARMOLOGI</strong><small>CRYPTO SCREENER <i>FUTURES</i></small></span>
+    </a>
+    <div class="market-summary">
+      <div><span class="label">PASAR</span><strong id="market-state">MENGHUBUNGKAN</strong></div>
+      <div><span class="label">PAIR AKTIF</span><strong id="active-pairs">—</strong></div>
+      <div><span class="label">UPDATE</span><strong id="last-update">—</strong></div>
+    </div>
+    <div class="live-state"><span class="live-dot"></span><span id="connection-label">MENYAMBUNG</span></div>
+  </header>
+
+  <main class="terminal">
+    <section class="market-strip" aria-label="Ringkasan pasar">
+      <div class="strip-title"><span class="eyebrow">BINANCE FUTURES</span><strong>MARKET PULSE</strong></div>
+      <div class="pulse-cell"><span>PAIR TERPANTAU</span><strong id="pulse-pairs">—</strong></div>
+      <div class="pulse-cell"><span>GAINER TERATAS</span><strong id="pulse-gainer" class="positive">—</strong></div>
+      <div class="pulse-cell"><span>LOSER TERATAS</span><strong id="pulse-loser" class="negative">—</strong></div>
+      <div class="pulse-cell"><span id="pulse-volume-label">VOLUME 24J</span><strong id="pulse-volume">—</strong></div>
+      <div class="strip-clock"><span class="eyebrow">WAKTU LOKAL</span><strong id="clock">--:--:--</strong></div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel screener-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">PEMANTAU PASAR</span><h1>Market Screener</h1></div>
+          <span class="result-count" id="result-count">0 PAIR</span>
+        </div>
+        <div class="filters">
+          <label class="search-box"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Cari simbol..." autocomplete="off"></label>
+          <label class="select-wrap"><span class="sr-only">Filter quote asset</span><select id="quote-filter"><option value="ALL">SEMUA QUOTE</option><option value="USDT">USDT</option><option value="USDC">USDC</option><option value="BTC">BTC</option><option value="USD">USD</option><option value="BNB">BNB</option></select></label>
+          <label class="select-wrap"><span class="sr-only">Filter rekomendasi</span><select id="signal-filter"><option value="ALL">Semua sinyal</option><option value="BUY">Watchlist Buy</option><option value="SELL">Watchlist Sell</option><option value="NEUTRAL">Netral</option></select></label>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th><button data-sort="symbol">SIMBOL <span></span></button></th>
+              <th class="align-right"><button data-sort="price">HARGA <span></span></button></th>
+              <th class="align-right"><button data-sort="change">24J % <span></span></button></th>
+              <th class="align-right"><button data-sort="volume">VOLUME 24J <span></span></button></th>
+              <th class="align-right"><button data-sort="spike">SPIKE <span></span></button></th>
+              <th class="align-right"><button data-sort="score">AKUM. <span></span></button></th>
+              <th><button data-sort="smc">SMC TERAKHIR <span></span></button></th>
+              <th><button data-sort="recommendation">REKOMENDASI <span></span></button></th>
+            </tr></thead>
+            <tbody id="screener-rows"><tr><td colspan="8" class="empty-state">Mengambil data pasar Binance...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="table-foot"><span id="table-note">Nilai indikator tersedia setelah pair dipilih.</span><span>DATA PUBLIK · TANPA API KEY</span></div>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-heading chart-heading">
+        <div><span class="eyebrow">ANALISIS KONTRAK TERPILIH</span><h2 id="chart-symbol">BTCUSDT <span class="quote-tag">FUTURES</span></h2></div>
+          <div class="chart-price"><strong id="selected-price">—</strong><span id="selected-change">—</span></div>
+        </div>
+        <div class="chart-toolbar">
+          <div class="timeframes" role="group" aria-label="Kerangka waktu">
+            <button data-interval="5m" class="active">5m</button><button data-interval="15m">15m</button><button data-interval="1h">1H</button><button data-interval="1d">1D</button>
+          </div>
+          <span class="chart-status" id="chart-status">MEMUAT</span>
+        </div>
+        <div id="price-chart" aria-label="Grafik TradingView"></div>
+        <div class="chart-legend"><span class="chart-powered">CHART OLEH TRADINGVIEW</span><span class="chart-hint">Marker SMC ditampilkan di panel analisis</span></div>
+        <div class="analysis-row">
+          <div class="analysis-card"><span class="eyebrow">SKOR AKUMULASI</span><strong id="accumulation-score" class="mono">—</strong><small id="accumulation-label">Menunggu data order book</small></div>
+          <div class="analysis-card"><span class="eyebrow">VOLUME SPIKE</span><strong id="volume-spike" class="mono">—</strong><small>Vs. rata-rata 20 candle</small></div>
+          <div class="analysis-card"><span class="eyebrow">ORDER BOOK IMBALANCE</span><strong id="book-imbalance" class="mono">—</strong><small id="book-depth">Depth 20 level · pair terpilih</small></div>
+          <div class="analysis-card"><span class="eyebrow">WHALE TRADE</span><strong id="whale-trades" class="mono">0</strong><small>≥ 50.000 unit quote</small></div>
+        </div>
+        <div class="smc-events">
+          <div class="subheading"><div><span class="eyebrow">PRICE ACTION</span><h3>Deteksi SMC</h3></div><span class="muted" id="smc-summary">Belum ada struktur terkonfirmasi</span></div>
+          <div id="smc-list" class="smc-list"><span class="empty-inline">Menunggu candle</span></div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="disclaimer">
+      <span class="disclaimer-icon">!</span>
+      <p><strong>DISCLAIMER RISIKO</strong> Sinyal ini adalah hasil analisis teknikal otomatis, bukan jaminan profit. Pergerakan harga ratusan persen jarang terjadi dan tidak bisa diprediksi dengan pasti oleh sistem apapun. Selalu lakukan riset mandiri (DYOR) dan manajemen risiko.</p>
+    </footer>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  </main>
+  <script>
+    document.getElementById("clock").textContent = new Intl.DateTimeFormat("id-ID", {hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false}).format(new Date());
+    setInterval(() => {
+      document.getElementById("clock").textContent = new Intl.DateTimeFormat("id-ID", {hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false}).format(new Date());
+    }, 1000);
+  </script>
+</body>
+</html>
